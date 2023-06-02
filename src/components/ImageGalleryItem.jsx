@@ -23,7 +23,7 @@ export class ImageGalleryItem extends Component {
 
     return (
       <ImageGalleryItemStyled className="gallery-item">
-        <ImageGalleryItemImage src={image.largeImageURL} alt={image.alt} onClick={this.openModal} />
+        <ImageGalleryItemImage src={image.largeImageURL} alt={image.tags} onClick={this.openModal} />
         <ModalImage isOpen={isModalOpen} onRequestClose={this.closeModal} image={image} />
       </ImageGalleryItemStyled>
     );

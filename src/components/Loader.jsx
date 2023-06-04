@@ -5,12 +5,12 @@ import PropTypes from 'prop-types';
 export class Load extends Component {
   render() {
     const { onLoader } = this.props;
-    const { loadingMore } = this.props; // Agregar loadingMore al destructurar los props
+    const { loadingMore } = this.props; 
   
     return (
       <div>
         {onLoader && onLoader(
-          loadingMore ? ( // Mostrar el loader solo cuando loadingMore es true
+          loadingMore ? ( 
             <Vortex
               color="#00BFFF"
               height={100}

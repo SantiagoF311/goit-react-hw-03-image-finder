@@ -1,78 +1,81 @@
-import React, { Component } from "react";
-import { fetchImages } from "./api/api";
-import { Searcher } from "./Searchbar";
-import { ImageGallery } from "./ImageGallery";
-import { searchImages } from "./api/SearchImages";
-import { ButtonLoadMore } from "./Button";
-import { Load } from "./Loader";
-
+import React, { Component } from 'react';
+import { Searcher } from './Searchbar';
+import { ImageGallery } from './ImageGallery';
+import { searchImages } from './api/SearchImages';
+import { ButtonLoadMore } from './Button';
+import { Load } from './Loader';
+import { Modal } from './Modal';
 export class App extends Component {
   state = {
     images: [],
     loading: true,
     error: null,
     imageName: '',
-    pageNumber: 1,
+    perPage: 20,
     loadingMore: false,
-  }
+    showModal: false,
+    selectedImage: null,
+  };
 
   async componentDidMount() {
-    try {
-      const images = await fetchImages();
-      this.setState({ images, loading: false });
-    } catch (error) {
-      this.setState({ error, loading: false })
-    }
+    this.setState({ loading: false });
   }
 
-  handleChangeImageName = (e) => {
+  handleChangeImageName = e => {
     e.preventDefault();
     const { value } = e.target;
     this.setState({ imageName: value });
   };
 
-  onSubmit = async (e) => {
+  onSubmit = async e => {
     e.preventDefault();
     const { imageName } = this.state;
 
     console.log(imageName);
 
     await searchImages(imageName, this.setState.bind(this));
-  }
+  };
 
-  LoadMorePics = async (e) => {
+  LoadMorePics = async e => {
     e.preventDefault();
-    const { imageName, pageNumber } = this.state;
-    const nextPageNumber = pageNumber + 1;
-    
+    const { imageName, perPage, images } = this.state;
+    const loadMorePics = perPage + 20;
+  
     this.setState({ loadingMore: true });
   
-    await searchImages(imageName, this.setState.bind(this), nextPageNumber);
-    
-    this.setState(prevState => ({
-      pageNumber: prevState.pageNumber + 1,
-      loadingMore: false 
+    const newImages = await searchImages(imageName, this.setState.bind(this), loadMorePics);
+  
+    this.setState(() => ({
+      loadingMore: false,
+      images: [...images, ...newImages],
     }));
   };
 
-  loader = (spinner) => {
+  loader = spinner => {
     const { loading, error } = this.state;
-  
+
     if (loading) {
       return spinner;
     }
-  
+
     if (error) {
       return <div>Error: {error.message}</div>;
     }
-  
-    return null; 
-  }
-  
-  
+
+    return null;
+  };
+  handleImageClick = image => {
+    this.setState({ selectedImage: image, showModal: true });
+    document.body.style.overflow = 'hidden';
+  };
+
+  handleModalClose = () => {
+    this.setState({ selectedImage: null, showModal: false });
+    document.body.style.overflow = 'auto';
+  };
 
   render() {
-    const { images, imageName } = this.state;
+    const { images, imageName, showModal, selectedImage } = this.state;
     return (
       <div>
         <Searcher
@@ -81,18 +84,14 @@ export class App extends Component {
           onSubmit={this.onSubmit}
         />
 
-        <ImageGallery
-          images={images}
-        />
+        <ImageGallery images={images} onItemClick={this.handleImageClick} />
 
-        <ButtonLoadMore
-          onLoadPics={this.LoadMorePics}
-        />
+        <ButtonLoadMore onLoadPics={this.LoadMorePics} />
 
-        <Load
-          onLoader={this.loader}
-          loadingMore={this.state.loadingMore}
-        />
+        <Load onLoader={this.loader} loadingMore={this.state.loadingMore} />
+        {showModal && (
+          <Modal image={selectedImage} onRequestClose={this.handleModalClose} />
+        )}
       </div>
     );
   }

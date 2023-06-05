@@ -11,7 +11,7 @@ export class App extends Component {
     loading: true,
     error: null,
     imageName: '',
-    perPage: 20,
+    pageNumber: 1,
     loadingMore: false,
     showModal: false,
     selectedImage: null,
@@ -29,27 +29,28 @@ export class App extends Component {
 
   onSubmit = async e => {
     e.preventDefault();
-    const { imageName } = this.state;
+    const { imageName, pageNumber } = this.state;
 
     console.log(imageName);
 
-    await searchImages(imageName, this.setState.bind(this));
+    await searchImages(imageName, this.setState.bind(this), pageNumber, true);
   };
 
   LoadMorePics = async e => {
     e.preventDefault();
-    const { imageName, perPage, images } = this.state;
-    const loadMorePics = perPage + 20;
+    const { imageName, pageNumber } = this.state;
+    const nextPageNumber = pageNumber + 1;
   
     this.setState({ loadingMore: true });
   
-    const newImages = await searchImages(imageName, this.setState.bind(this), loadMorePics);
+    await searchImages(imageName, this.setState.bind(this), nextPageNumber, false);
   
-    this.setState(() => ({
+    this.setState(prevState => ({
       loadingMore: false,
-      images: [...images, ...newImages],
+      pageNumber: nextPageNumber
     }));
   };
+  
 
   loader = spinner => {
     const { loading, error } = this.state;
